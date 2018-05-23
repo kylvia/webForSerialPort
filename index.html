@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        form{
+            margin: 30px auto;
+            width: 35%;
+        }
+    </style>
+</head>
+<body>
+<form action="">
+    <fieldset>
+        <legend>http控制</legend>
+        <br>
+        <br>
+        <div id="httpCtrol">
+            <input type="button" sy-val = '01050001f000D80A' value="黄灯">
+            <input type="button" sy-val = '01050002f000280A' value="绿灯">
+            <input type="button" sy-val = '010500000000CDCA,0105000100009C0A,0105000200006C0A,0105000300003DCA' value="关闭所有">
+        </div>
+    </fieldset>
+</form>
+<br>
+<form class="form">
+    <fieldset>
+        <legend>wobsocket 控制</legend>
+        <br>
+        <br>
+        <div>
+            <input type="button" onclick="clickDend('01050000ff008C3A,01050001f000D80A')" value="红黄灯">
+            <input type="button" onclick="clickDend('01050001f000D80A')" value="黄灯">
+            <input type="button" onclick="clickDend('01050002f000280A')" value="绿灯">
+            <input type="button" onclick="clickDend('01050003f300793A')" value="蜂鸣器">
+            <input type="button" onclick="clickDend('0105000300003DCA')" value="关闭蜂鸣器">
+            <input type="button" onclick="clickDend('010500000000CDCA,0105000100009C0A,0105000200006C0A,0105000300003DCA')" value="关闭所有">
+        </div>
+        <br>
+        <ul id="content"></ul>
+        <input type="text" placeholder="请输入发送的消息" class="message" id="message"/>
+        <input type="button" value="发送" id="send" class="connect"/>
+        <input type="button" value="连接" id="connect" class="connect"/>
+    </fieldset>
+</form>
+<script src="jquery.min.js"></script>
+<script>
+    var oUl=document.getElementById('content');
+    var oConnect=document.getElementById('connect');
+    var oSend=document.getElementById('send');
+    var oInput=document.getElementById('message');
+    var ws=null;
+    oConnect.onclick=function(){
+        ws=new WebSocket('ws://localhost:5000');
+        ws.onopen=function(){
+            oUl.innerHTML+="<li>客户端已连接</li>";
+        }
+        ws.onmessage=function(evt){
+            oUl.innerHTML+="<li>"+evt.data+"</li>";
+        }
+        ws.onclose=function(){
+            oUl.innerHTML+="<li>客户端已断开连接</li>";
+        };
+        ws.onerror=function(evt){
+            oUl.innerHTML+="<li>"+evt.data+"</li>";
+
+        };
+    };
+    oSend.onclick=function(){
+        if(ws){
+            ws.send(oInput.value);
+        }
+    }
+    function clickDend(val){
+        console.log(val)
+        if(ws){
+//            ws.send('010500000000CDCA,0105000100009C0A,0105000200006C0A,0105000300003DCA');
+            ws.send(val);
+        }
+    }
+</script>
+<script>
+    $(function () {
+        $('#httpCtrol input').on('click',function () {
+            var $this = $(this)
+            $.ajax({
+                method:'post',
+                url:'http://localhost:1124/ledControl/on.do',
+                data:{data:$this.attr('sy-val')},
+                success:function (res) {
+                    console.log(res)
+                }
+            })
+        })
+    })
+</script>
+</body>
+</html>
